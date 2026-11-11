@@ -57,11 +57,11 @@ interface Draft {
 }
 
 function generateMonth(monthStart: string, isCurrent: boolean, prevCardTotal: number | null, monthsAgo: number): Draft[] {
-  const [y, m] = monthStart.split("-").map(Number);
+  const [y = 0, m = 1] = monthStart.split("-").map(Number);
   const rnd = mulberry32(y * 100 + m);
   const between = (a: number, b: number) => round2(a + rnd() * (b - a));
   const int = (a: number, b: number) => Math.floor(a + rnd() * (b - a + 1));
-  const pick = <T,>(xs: T[]) => xs[Math.floor(rnd() * xs.length)];
+  const pick = <T,>(xs: T[]): T => xs[Math.floor(rnd() * xs.length)]!;
   const last = Number(endOfMonth(monthStart).slice(8, 10));
   const d: Draft[] = [];
   const add = (x: Draft) => d.push(x);
@@ -142,7 +142,7 @@ export function buildDemoSnapshot(today: string, updatedAt: string, enabledInsti
         direction: x.direction,
         currency: "BRL",
         origin: "demo",
-        counterpartAccountId: x.counterpartAccountId,
+        ...(x.counterpartAccountId ? { counterpartAccountId: x.counterpartAccountId } : {}),
       });
     });
   }

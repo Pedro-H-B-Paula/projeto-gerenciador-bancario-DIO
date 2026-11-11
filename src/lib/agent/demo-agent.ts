@@ -79,7 +79,7 @@ export function detectIntent(question: string): Intent {
 }
 
 function source(s: FinancialSnapshot, period?: DateRange, note?: string): MessageBlock {
-  return { type: "source", origin: s.origin, updatedAt: s.updatedAt, period: period?.label, note };
+  return { type: "source", origin: s.origin, updatedAt: s.updatedAt, ...(period ? { period: period.label } : {}), ...(note ? { note } : {}) };
 }
 
 function periodLine(r: DateRange) {
@@ -224,7 +224,7 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
       const cats = categoryBreakdown(filterRange(txs, range));
       if (!cats.length) return { content: `Não há despesas ${range.label}.`, blocks: [source(snapshot, range)] };
       return {
-        content: `${capitalize(range.label)}, a categoria que mais consome dinheiro é **${cats[0].label.toLowerCase()}**, com **${formatBRL(cats[0].total)}** (${formatPercent(cats[0].share)} das despesas).${
+        content: `${capitalize(range.label)}, a categoria que mais consome dinheiro é **${cats[0]!.label.toLowerCase()}**, com **${formatBRL(cats[0]!.total)}** (${formatPercent(cats[0]!.share)} das despesas).${
           cats[1] ? ` Em seguida vêm ${cats[1].label.toLowerCase()} (${formatBRL(cats[1].total)})${cats[2] ? ` e ${cats[2].label.toLowerCase()} (${formatBRL(cats[2].total)})` : ""}.` : ""
         }`,
         blocks: [
@@ -254,7 +254,7 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
       const top = topTransactions(filterRange(txs, range), 8);
       if (!top.length) return { content: `Não há despesas ${range.label}.`, blocks: [source(snapshot, range)] };
       return {
-        content: `Estas foram suas maiores despesas ${range.label}. A maior foi **${top[0].description}**, de **${formatBRL(top[0].amount)}**.`,
+        content: `Estas foram suas maiores despesas ${range.label}. A maior foi **${top[0]!.description}**, de **${formatBRL(top[0]!.amount)}**.`,
         blocks: [
           {
             type: "table",

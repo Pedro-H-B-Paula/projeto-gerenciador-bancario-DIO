@@ -25,7 +25,7 @@ const NAV = [
 function UserMenu({ compact = false }: { compact?: boolean }) {
   const user = useCurrentUser();
   const signOut = useSignOut();
-  const name = (user?.user_metadata?.display_name as string | undefined) || user?.email || "";
+  const name = (user?.user_metadata?.["display_name"] as string | undefined) || user?.email || "";
   const initial = (name[0] ?? "?").toUpperCase();
   return (
     <DropdownMenu>

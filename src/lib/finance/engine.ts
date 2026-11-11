@@ -178,7 +178,7 @@ export function detectRecurring(txs: Transaction[]): RecurringItem[] {
     if (!list.every((t) => Math.abs(t.amount - avg) <= avg * 0.15)) continue;
     if (list.length > months.size * 1.5) continue; // many per month = habit, not a bill
     const sorted = [...list].sort((a, b) => a.date.localeCompare(b.date));
-    const last = sorted[sorted.length - 1];
+    const last = sorted[sorted.length - 1]!;
     out.push({
       key,
       description: last.description,
@@ -279,7 +279,7 @@ export function unusualExpenses(txs: Transaction[]) {
   for (const t of expenses) byCat.set(t.category, [...(byCat.get(t.category) ?? []), t.amount]);
   const median = (xs: number[]) => {
     const s = [...xs].sort((a, b) => a - b);
-    return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+    return s.length % 2 ? s[(s.length - 1) / 2]! : (s[s.length / 2 - 1]! + s[s.length / 2]!) / 2;
   };
   const maxByDesc = new Map<string, number>();
   const out: Transaction[] = [];

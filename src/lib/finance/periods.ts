@@ -55,9 +55,9 @@ export function resolvePeriod(text: string, today: string): DateRange | null {
 
   const lastN = t.match(/ultim[oa]s? (\d+|[a-z]+) (dias?|semanas?|mes|meses)/);
   if (lastN) {
-    const n = toNumber(lastN[1]);
+    const n = toNumber(lastN[1]!);
     if (n && n > 0) {
-      const unit = lastN[2];
+      const unit = lastN[2]!;
       if (unit.startsWith("dia")) {
         return { from: addDays(today, -(n - 1)), to: today, label: `nos últimos ${n} dias` };
       }
@@ -90,8 +90,8 @@ export function resolvePeriod(text: string, today: string): DateRange | null {
   }
 
   const since = t.match(/desde (?:o (?:inicio|comeco) de )?([a-z]+)/);
-  if (since && since[1] in MONTH_INDEX) {
-    const idx = MONTH_INDEX[since[1]];
+  if (since && since[1]! in MONTH_INDEX) {
+    const idx = MONTH_INDEX[since[1]!]!;
     let year = Number(today.slice(0, 4));
     const candidate = `${year}-${String(idx + 1).padStart(2, "0")}-01`;
     if (candidate > today) year -= 1;
@@ -100,8 +100,8 @@ export function resolvePeriod(text: string, today: string): DateRange | null {
   }
 
   const inMonth = t.match(/\b(?:em|de|no mes de) ([a-z]+)\b/);
-  if (inMonth && inMonth[1] in MONTH_INDEX) {
-    const idx = MONTH_INDEX[inMonth[1]];
+  if (inMonth && inMonth[1]! in MONTH_INDEX) {
+    const idx = MONTH_INDEX[inMonth[1]!]!;
     let year = Number(today.slice(0, 4));
     let from = `${year}-${String(idx + 1).padStart(2, "0")}-01`;
     if (from > today) {
