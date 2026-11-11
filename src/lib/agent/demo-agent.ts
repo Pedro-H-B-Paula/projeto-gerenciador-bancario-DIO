@@ -384,7 +384,7 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
       const list = unusualExpenses(txs).filter((x) => x.date >= range.from && x.date <= range.to);
       if (!list.length) return { content: `Não encontrei gastos fora do padrão em ${range.label}.`, blocks: [source(snapshot, range)] };
       return {
-        content: `Encontrei **${list.length}** ${list.length === 1 ? "gasto fora do padrão" : "gastos fora do padrão"} em ${range.label}.\n\n*Critério: despesa acima de 2,5× a mediana da própria categoria e de pelo menos R$ 150,00.*`,
+        content: `Encontrei **${list.length}** ${list.length === 1 ? "gasto fora do padrão" : "gastos fora do padrão"} em ${range.label}.\n\n*Critério: acima de R$ 150,00 e mais que o dobro do maior valor já pago no mesmo estabelecimento — ou, se o estabelecimento for novo, 2,5× a mediana da categoria.*`,
         blocks: [
           {
             type: "table",

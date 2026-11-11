@@ -33,7 +33,7 @@ export function computeInsights(snapshot: FinancialSnapshot, today: string): Ins
   // 1. Biggest category change, month-to-date vs same days of previous month.
   const { current, previous } = monthToDateRanges(today);
   const cmp = comparePeriods(txs, current, previous);
-  const change = cmp.byCategory.find((c) => c.pct !== null && c.b >= 100 && Math.abs(c.pct) >= 10);
+  const change = cmp.byCategory.find((c) => c.pct !== null && c.a > 0 && c.b >= 100 && Math.abs(c.pct) >= 10);
   if (change && change.pct !== null) {
     const up = change.pct > 0;
     out.push({
@@ -123,7 +123,7 @@ export function computeInsights(snapshot: FinancialSnapshot, today: string): Ins
       tone: "warning",
       title: `Gasto fora do padrão em ${categoryLabel(unusual[0].category).toLowerCase()}`,
       detail: `${unusual[0].description}: ${formatBRL(unusual[0].amount)} em ${formatDate(unusual[0].date)}.`,
-      methodology: "Despesa acima de 2,5× a mediana da categoria e de pelo menos R$ 150,00.",
+      methodology: "Acima de R$ 150,00 e mais que o dobro do maior valor já pago no mesmo estabelecimento — ou, se for novo, 2,5× a mediana da categoria.",
     });
   }
 

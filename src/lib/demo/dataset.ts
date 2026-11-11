@@ -56,7 +56,7 @@ interface Draft {
   counterpartAccountId?: string;
 }
 
-function generateMonth(monthStart: string, isCurrent: boolean, prevCardTotal: number | null): Draft[] {
+function generateMonth(monthStart: string, isCurrent: boolean, prevCardTotal: number | null, monthsAgo: number): Draft[] {
   const [y, m] = monthStart.split("-").map(Number);
   const rnd = mulberry32(y * 100 + m);
   const between = (a: number, b: number) => round2(a + rnd() * (b - a));
@@ -111,6 +111,8 @@ function generateMonth(monthStart: string, isCurrent: boolean, prevCardTotal: nu
     add({ day: int(1, last), accountId: CARD, description: pick(shop), category: "compras", amount: between(80, 380), direction: "expense" });
   if (rnd() < 0.5) add({ day: int(1, last), accountId: CARD, description: "Livraria Página", category: "educacao", amount: between(45, 120), direction: "expense" });
 
+  if (monthsAgo === 2) add({ day: 21, accountId: CARD, description: "Notebook — Loja TecMais", category: "compras", amount: 4299, direction: "expense" });
+
   return d;
 }
 
@@ -121,7 +123,7 @@ export function buildDemoSnapshot(today: string, updatedAt: string, enabledInsti
   let prevCardTotal: number | null = null;
   for (let i = 0; i <= 6; i++) {
     const ms = addMonths(first, i);
-    const fullMonth = generateMonth(ms, i === 6, prevCardTotal);
+    const fullMonth = generateMonth(ms, i === 6, prevCardTotal, 6 - i);
     const drafts = fullMonth
       .map((x) => ({ ...x, date: `${ms.slice(0, 8)}${String(x.day).padStart(2, "0")}` }))
       .filter((x) => x.date <= today)

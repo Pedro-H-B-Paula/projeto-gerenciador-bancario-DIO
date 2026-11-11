@@ -167,7 +167,7 @@ export function detectRecurring(txs: Transaction[]): RecurringItem[] {
   const groups = new Map<string, Transaction[]>();
   for (const t of uniqueTransactions(txs)) {
     if (t.direction !== "expense") continue;
-    const key = t.description.toLowerCase().replace(/\d+/g, "").replace(/\s+/g, " ").trim();
+    const key = descKey(t.description);
     groups.set(key, [...(groups.get(key) ?? []), t]);
   }
   const out: RecurringItem[] = [];
@@ -264,21 +264,39 @@ export function savingsEstimate(txs: Transaction[], today: string, n = 3): Savin
   };
 }
 
-/** Expenses far above the category's typical value (> 2.5× the category median, min R$ 150). */
+const descKey = (d: string) => d.toLowerCase().replace(/\d+/g, "").replace(/\s+/g, " ").trim();
+
+/**
+ * Unusual expense (min R$ 150,00):
+ * - recurring merchant: more than 2× the largest earlier amount at the same merchant;
+ * - new merchant: more than 2,5× the median of its category.
+ */
 export function unusualExpenses(txs: Transaction[]) {
+  const expenses = uniqueTransactions(txs)
+    .filter((t) => t.direction === "expense")
+    .sort((a, b) => a.date.localeCompare(b.date));
   const byCat = new Map<CategoryId, number[]>();
-  const expenses = uniqueTransactions(txs).filter((t) => t.direction === "expense");
   for (const t of expenses) byCat.set(t.category, [...(byCat.get(t.category) ?? []), t.amount]);
   const median = (xs: number[]) => {
     const s = [...xs].sort((a, b) => a - b);
     return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
   };
-  return expenses
-    .filter((t) => {
-      const list = byCat.get(t.category)!;
-      return list.length >= 4 && t.amount >= 150 && t.amount > median(list) * 2.5;
-    })
-    .sort((a, b) => b.amount - a.amount);
+  const maxByDesc = new Map<string, number>();
+  const out: Transaction[] = [];
+  for (const t of expenses) {
+    const k = descKey(t.description);
+    const prevMax = maxByDesc.get(k);
+    if (t.amount >= 150) {
+      if (prevMax !== undefined) {
+        if (t.amount > prevMax * 2) out.push(t);
+      } else {
+        const list = byCat.get(t.category)!;
+        if (list.length >= 4 && t.amount > median(list) * 2.5) out.push(t);
+      }
+    }
+    maxByDesc.set(k, Math.max(prevMax ?? 0, t.amount));
+  }
+  return out.sort((a, b) => b.amount - a.amount);
 }
 
 export function averageMonthlyExpense(txs: Transaction[], today: string, n = 3) {
