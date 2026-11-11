@@ -121,12 +121,12 @@ export function buildDemoSnapshot(today: string, updatedAt: string, enabledInsti
   let prevCardTotal: number | null = null;
   for (let i = 0; i <= 6; i++) {
     const ms = addMonths(first, i);
-    const drafts = generateMonth(ms, i === 6, prevCardTotal)
+    const fullMonth = generateMonth(ms, i === 6, prevCardTotal);
+    const drafts = fullMonth
       .map((x) => ({ ...x, date: `${ms.slice(0, 8)}${String(x.day).padStart(2, "0")}` }))
       .filter((x) => x.date <= today)
       .sort((a, b) => a.date.localeCompare(b.date));
-    // Card bill paid next month = purchases of this whole month (generated even if after today).
-    const fullMonth = generateMonth(ms, i === 6, prevCardTotal);
+    // Card bill paid next month = purchases of this whole month.
     prevCardTotal = fullMonth.filter((x) => x.accountId === CARD && x.direction === "expense").reduce((s, x) => s + x.amount, 0);
     drafts.forEach((x, j) => {
       all.push({
