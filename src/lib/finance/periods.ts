@@ -27,12 +27,17 @@ function toNumber(token: string): number | null {
 }
 
 export function currentMonthRange(today: string): DateRange {
-  return { from: startOfMonth(today), to: today, label: `este mês (${monthLong(today.slice(0, 7))})` };
+  return { from: startOfMonth(today), to: today, label: `neste mês (${monthLong(today.slice(0, 7))})` };
 }
 
 export function previousMonthRange(today: string): DateRange {
   const prev = addMonths(startOfMonth(today), -1);
-  return { from: prev, to: endOfMonth(prev), label: `mês passado (${monthLong(prev.slice(0, 7))})` };
+  return { from: prev, to: endOfMonth(prev), label: `no mês passado (${monthLong(prev.slice(0, 7))})` };
+}
+
+/** Labels are prepositional phrases ("neste mês", "na semana passada") so they read naturally in sentences. */
+export function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /**
@@ -54,23 +59,23 @@ export function resolvePeriod(text: string, today: string): DateRange | null {
     if (n && n > 0) {
       const unit = lastN[2];
       if (unit.startsWith("dia")) {
-        return { from: addDays(today, -(n - 1)), to: today, label: `últimos ${n} dias` };
+        return { from: addDays(today, -(n - 1)), to: today, label: `nos últimos ${n} dias` };
       }
       if (unit.startsWith("semana")) {
-        return { from: addDays(today, -(n * 7 - 1)), to: today, label: `últimas ${n} semanas` };
+        return { from: addDays(today, -(n * 7 - 1)), to: today, label: `nas últimas ${n} semanas` };
       }
       // "últimos 3 meses" = the 3 full months before the current one plus nothing partial? We use
       // a rolling window: same day N months ago (+1 day) until today.
-      return { from: addDays(addMonths(today, -n), 1), to: today, label: `últimos ${n} meses` };
+      return { from: addDays(addMonths(today, -n), 1), to: today, label: `nos últimos ${n} meses` };
     }
   }
 
   if (/semana passada|semana anterior|ultima semana/.test(t)) {
     const start = addDays(startOfWeek(today), -7);
-    return { from: start, to: addDays(start, 6), label: `semana passada (${formatDate(start)} a ${formatDate(addDays(start, 6))})` };
+    return { from: start, to: addDays(start, 6), label: `na semana passada (${formatDate(start)} a ${formatDate(addDays(start, 6))})` };
   }
   if (/(essa|esta|nesta|nessa) semana/.test(t)) {
-    return { from: startOfWeek(today), to: today, label: "esta semana" };
+    return { from: startOfWeek(today), to: today, label: "nesta semana" };
   }
 
   if (/mes passado|mes anterior|ultimo mes/.test(t)) return previousMonthRange(today);
@@ -78,10 +83,10 @@ export function resolvePeriod(text: string, today: string): DateRange | null {
 
   if (/ano passado/.test(t)) {
     const y = Number(today.slice(0, 4)) - 1;
-    return { from: `${y}-01-01`, to: `${y}-12-31`, label: `ano de ${y}` };
+    return { from: `${y}-01-01`, to: `${y}-12-31`, label: `em ${y}` };
   }
   if (/(este|esse|neste|nesse) ano|no ano/.test(t)) {
-    return { from: `${today.slice(0, 4)}-01-01`, to: today, label: `este ano (${today.slice(0, 4)})` };
+    return { from: `${today.slice(0, 4)}-01-01`, to: today, label: `neste ano (${today.slice(0, 4)})` };
   }
 
   const since = t.match(/desde (?:o (?:inicio|comeco) de )?([a-z]+)/);
@@ -103,7 +108,7 @@ export function resolvePeriod(text: string, today: string): DateRange | null {
       year -= 1;
       from = `${year}-${String(idx + 1).padStart(2, "0")}-01`;
     }
-    return { from, to: minDate(endOfMonth(from), today), label: `${MONTHS_LONG[idx]} de ${year}` };
+    return { from, to: minDate(endOfMonth(from), today), label: `em ${MONTHS_LONG[idx]} de ${year}` };
   }
 
   return null;

@@ -21,7 +21,7 @@ import {
   unusualExpenses,
 } from "@/lib/finance/engine";
 import { formatBRL, formatDate, formatPercent, monthLong, monthShort } from "@/lib/finance/format";
-import { currentMonthRange, normalizeText, previousMonthRange, resolvePeriod } from "@/lib/finance/periods";
+import { capitalize, currentMonthRange, normalizeText, previousMonthRange, resolvePeriod } from "@/lib/finance/periods";
 import type { CategoryId, DateRange, FinancialSnapshot } from "@/lib/finance/types";
 import type { AgentAnswer, MessageBlock } from "./blocks";
 
@@ -162,11 +162,11 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
         });
       blocks.push(source(snapshot, range));
       if (s.count === 0)
-        return { content: `Não encontrei movimentações em **${range.label}** (${periodLine(range)}).`, blocks: [source(snapshot, range)] };
+        return { content: `Não encontrei movimentações **${range.label}** (${periodLine(range)}).`, blocks: [source(snapshot, range)] };
       return {
         content: isIncome
-          ? `Em **${range.label}** você recebeu **${formatBRL(s.income)}**.`
-          : `Em **${range.label}** você gastou **${formatBRL(s.expense)}**${
+          ? `${capitalize(range.label)} você recebeu **${formatBRL(s.income)}**.`
+          : `${capitalize(range.label)} você gastou **${formatBRL(s.expense)}**${
               cats[0] ? `. A maior parte foi com **${cats[0].label.toLowerCase()}** (${formatBRL(cats[0].total)}, ${formatPercent(cats[0].share)} das despesas)` : ""
             }.\n\n*Pagamentos de fatura e transferências entre suas contas não entram nessa soma, para não contar a mesma despesa duas vezes.*`,
         blocks,
@@ -194,8 +194,8 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
       return {
         content:
           total === 0
-            ? `Não encontrei gastos com **${categoryLabel(cat).toLowerCase()}** em ${range.label}.`
-            : `Você gastou **${formatBRL(total)}** com ${categoryLabel(cat).toLowerCase()} em ${range.label}, aproximadamente **${formatPercent(share)}** das suas despesas.${refLine}`,
+            ? `Não encontrei gastos com **${categoryLabel(cat).toLowerCase()}** ${range.label}.`
+            : `Você gastou **${formatBRL(total)}** com ${categoryLabel(cat).toLowerCase()} ${range.label}, aproximadamente **${formatPercent(share)}** das suas despesas.${refLine}`,
         blocks: [
           ...(items.length
             ? [
@@ -222,9 +222,9 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
     case "categories": {
       const range = resolvePeriod(question, today) ?? currentMonthRange(today);
       const cats = categoryBreakdown(filterRange(txs, range));
-      if (!cats.length) return { content: `Não há despesas em ${range.label}.`, blocks: [source(snapshot, range)] };
+      if (!cats.length) return { content: `Não há despesas ${range.label}.`, blocks: [source(snapshot, range)] };
       return {
-        content: `Em ${range.label}, a categoria que mais consome dinheiro é **${cats[0].label.toLowerCase()}**, com **${formatBRL(cats[0].total)}** (${formatPercent(cats[0].share)} das despesas).${
+        content: `${capitalize(range.label)}, a categoria que mais consome dinheiro é **${cats[0].label.toLowerCase()}**, com **${formatBRL(cats[0].total)}** (${formatPercent(cats[0].share)} das despesas).${
           cats[1] ? ` Em seguida vêm ${cats[1].label.toLowerCase()} (${formatBRL(cats[1].total)})${cats[2] ? ` e ${cats[2].label.toLowerCase()} (${formatBRL(cats[2].total)})` : ""}.` : ""
         }`,
         blocks: [
@@ -252,9 +252,9 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
     case "top": {
       const range = resolvePeriod(question, today) ?? currentMonthRange(today);
       const top = topTransactions(filterRange(txs, range), 8);
-      if (!top.length) return { content: `Não há despesas em ${range.label}.`, blocks: [source(snapshot, range)] };
+      if (!top.length) return { content: `Não há despesas ${range.label}.`, blocks: [source(snapshot, range)] };
       return {
-        content: `Estas foram suas maiores despesas em ${range.label}. A maior foi **${top[0].description}**, de **${formatBRL(top[0].amount)}**.`,
+        content: `Estas foram suas maiores despesas ${range.label}. A maior foi **${top[0].description}**, de **${formatBRL(top[0].amount)}**.`,
         blocks: [
           {
             type: "table",
@@ -344,8 +344,8 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
       return {
         content:
           s.expense > s.income
-            ? `Sim. Em ${range.label} suas despesas (**${formatBRL(s.expense)}**) superam suas receitas (**${formatBRL(s.income)}**) em **${formatBRL(s.expense - s.income)}**.`
-            : `Não. Em ${range.label} você recebeu **${formatBRL(s.income)}** e gastou **${formatBRL(s.expense)}**, com sobra de **${formatBRL(s.net)}**.` +
+            ? `Sim. ${capitalize(range.label)}, suas despesas (**${formatBRL(s.expense)}**) superam suas receitas (**${formatBRL(s.income)}**) em **${formatBRL(s.expense - s.income)}**.`
+            : `Não. ${capitalize(range.label)} você recebeu **${formatBRL(s.income)}** e gastou **${formatBRL(s.expense)}**, com sobra de **${formatBRL(s.net)}**.` +
               (deficitMonths ? `\n\nNos últimos 6 meses, porém, ${deficitMonths} ${deficitMonths === 1 ? "mês fechou" : "meses fecharam"} no negativo.` : ""),
         blocks: [
           {
@@ -380,11 +380,11 @@ export function answerQuestion(question: string, snapshot: FinancialSnapshot, to
     }
 
     case "unusual": {
-      const range = resolvePeriod(question, today) ?? { from: addMonths(startOfMonth(today), -2), to: today, label: "últimos 3 meses" };
+      const range = resolvePeriod(question, today) ?? { from: addMonths(startOfMonth(today), -2), to: today, label: "nos últimos 3 meses" };
       const list = unusualExpenses(txs).filter((x) => x.date >= range.from && x.date <= range.to);
-      if (!list.length) return { content: `Não encontrei gastos fora do padrão em ${range.label}.`, blocks: [source(snapshot, range)] };
+      if (!list.length) return { content: `Não encontrei gastos fora do padrão ${range.label}.`, blocks: [source(snapshot, range)] };
       return {
-        content: `Encontrei **${list.length}** ${list.length === 1 ? "gasto fora do padrão" : "gastos fora do padrão"} em ${range.label}.\n\n*Critério: acima de R$ 150,00 e mais que o dobro do maior valor já pago no mesmo estabelecimento — ou, se o estabelecimento for novo, 2,5× a mediana da categoria.*`,
+        content: `Encontrei **${list.length}** ${list.length === 1 ? "gasto fora do padrão" : "gastos fora do padrão"} ${range.label}.\n\n*Critério: acima de R$ 150,00 e mais que o dobro do maior valor já pago no mesmo estabelecimento — ou, se o estabelecimento for novo, 2,5× a mediana da categoria.*`,
         blocks: [
           {
             type: "table",
