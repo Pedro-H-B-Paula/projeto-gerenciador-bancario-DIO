@@ -56,7 +56,7 @@ export function formatDateTime(iso: string): string {
 }
 
 export function monthShort(monthKey: string): string {
-  return MONTHS_SHORT[Number(monthKey.slice(5, 7)) - 1];
+  return MONTHS_SHORT[Number(monthKey.slice(5, 7)) - 1]!;
 }
 
 export function monthLong(monthKey: string): string {
