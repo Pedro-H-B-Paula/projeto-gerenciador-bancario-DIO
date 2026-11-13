@@ -19,7 +19,7 @@ export function StatCard({
   className?: string;
 }) {
   return (
-    <div className={cn("surface-card flex flex-col gap-3 p-5 animate-fade-up", className)}>
+    <div className={cn("surface-card flex flex-col gap-3 p-4 sm:p-5 animate-fade-up", className)}>
       <div className="flex items-center justify-between">
         <span className="text-[0.8125rem] text-muted-foreground">{label}</span>
         {Icon && (
@@ -36,7 +36,7 @@ export function StatCard({
           </span>
         )}
       </div>
-      <div className="tabular text-2xl font-semibold tracking-tight text-foreground">{value}</div>
+      <div className="tabular text-lg font-semibold tracking-tight text-foreground sm:text-2xl">{value}</div>
       {footer && <div className="text-xs text-muted-foreground">{footer}</div>}
     </div>
   );
