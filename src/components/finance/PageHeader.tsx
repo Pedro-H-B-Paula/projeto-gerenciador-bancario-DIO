@@ -14,7 +14,7 @@ export function PageHeader({ title, description, actions }: { title: string; des
 
 export function Panel({ title, description, actions, children, className = "" }: { title?: string; description?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={`surface-card p-5 animate-fade-up ${className}`}>
+    <section className={`surface-card p-4 sm:p-5 animate-fade-up ${className}`}>
       {(title || actions) && (
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
