@@ -326,7 +326,9 @@ function TransactionsPage() {
 }
 
 function parseAmount(s: string): number | null {
-  const clean = s.replace(/[^\d,.-]/g, "").replace(/\./g, "").replace(",", ".");
+  const raw = s.replace(/[^\d,.]/g, "");
+  // Brazilian format "1.250,50": dots are thousands separators when a comma is present.
+  const clean = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
   if (!clean) return null;
   const n = Number(clean);
   return Number.isFinite(n) ? n : null;
